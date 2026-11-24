@@ -15,7 +15,6 @@ async def get_or_create_conversation(session: AsyncSession, user1_id: int, user2
         return conversation
     conversation = Conversation(user2_id=second_id,user1_id=first_id)
     session.add(conversation)
-    await session.commit()
-    await session.refresh(conversation)
+    await session.flush()
     
     return conversation
