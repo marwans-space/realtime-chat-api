@@ -1,12 +1,20 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routers.health import router as health_router
+from database.session import engine
+from sqlalchemy import text
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    pass
+    try:
+        async with engine.connect() as connection:
+            result = await  connection.execute(text("SELECT 1"))
+            print(f"Database connection successful! Result: {result.scalar()}")
+    except Exception as e:
+        print(f"Database connection error: {e}")
+        raise
     yield
-    pass
+    await engine.dispose()
 
 app = FastAPI(title="Realtime Chat API",
               description="A real-time messaging API built with FastAPI",
