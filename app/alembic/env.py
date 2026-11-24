@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from core.config import get_settings
 from database.base import Base
 from models.user import User
+from models.conversations import Conversation
+from models.messages import Message
 
 config = context.config
 
