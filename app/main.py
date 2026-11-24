@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routers.health import router as health_router
+from routers.auth import router as auth_router
 from database.session import engine
 from sqlalchemy import text
 
@@ -26,3 +27,4 @@ app = FastAPI(title="Realtime Chat API",
 async def root():
     return {"message": "Welcome to Realtime Chat API"}
 app.include_router(health_router)
+app.include_router(auth_router)
