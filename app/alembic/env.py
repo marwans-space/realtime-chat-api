@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from core.config import get_settings
 from database.base import Base
+from models.user import User
 
 config = context.config
 
