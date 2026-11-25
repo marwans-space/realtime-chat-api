@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from routers.health import router as health_router
 from routers.auth import router as auth_router
 from routers.chat import router as chat_router
+from routers.websocket import router as socket_router
 from database.session import engine
 from sqlalchemy import text
 
@@ -30,3 +31,4 @@ async def root():
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(socket_router)
