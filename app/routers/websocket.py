@@ -7,7 +7,7 @@ from fastapi import (
     WebSocketException,
 )
 from pydantic import ValidationError
-from services.connection_manager import ConnectionManager
+from services.connection_manager import manager
 from schemas.chat import MessageModel, MessageResponse
 from core.security import decode_access_token
 import jwt
@@ -17,10 +17,7 @@ from models.user import User
 from models.messages import Message
 from services.conversation import get_or_create_conversation
 
-router = APIRouter()
-
-manager = ConnectionManager()
-
+router = APIRouter(prefix="/ws", tags=["Socket"])
 
 @router.websocket("/")
 async def websocket_endpoint(socket: WebSocket, token: str = Query()):
@@ -86,4 +83,4 @@ async def websocket_endpoint(socket: WebSocket, token: str = Query()):
     except WebSocketDisconnect:
         pass
     finally:
-        manager.disconnect(user_id)
+        manager.disconnect(user_id, socket)

@@ -8,6 +8,7 @@ from models.conversations import Conversation
 from schemas.chat import MessageModel, MessageResponse, ConversationResponse
 from dependencies.auth import get_current_user
 from services.conversation import get_or_create_conversation
+from services.connection_manager import manager
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -25,11 +26,16 @@ async def message(body: MessageModel,current_user: User = Depends(get_current_us
         session.add(message)
         await session.commit()
         await session.refresh(message)
-
-        return message
     except Exception:
         await session.rollback()
         raise
+
+    message_response = MessageResponse.model_validate(message)
+    await manager.send_personal_message(
+        message=message_response.model_dump(mode="json"),
+        user_id=recipient.id,
+    )
+    return message_response
 
 @router.get("/conversation",response_model=list[ConversationResponse])
 async def get_convo(current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db)):
