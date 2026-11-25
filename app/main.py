@@ -7,10 +7,13 @@ from routers.websocket import router as socket_router
 from database.session import engine, get_db
 from dependencies.auth import get_current_user
 from models.user import User
+from core.config import get_settings
 from schemas.users import UserSearchResult
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
+
+client_url = get_settings().client_url
 
 
 @asynccontextmanager
@@ -36,10 +39,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", client_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
