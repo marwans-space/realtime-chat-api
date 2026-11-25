@@ -8,6 +8,7 @@ class MessageResponse(BaseModel):
     id: int
     conversation_id: int
     sender_id: int
+    sender_username: str | None = None
     content: str
     created_at: datetime
 
@@ -17,6 +18,7 @@ class ConversationResponse(BaseModel):
     id: int
     user1_id: int
     user2_id: int
+    peer_username: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

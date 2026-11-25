@@ -51,6 +51,7 @@ export default function Chat() {
   const [sending, setSending] = useState(false);
   const [composerError, setComposerError] = useState("");
   const [showNewChat, setShowNewChat] = useState(false);
+  const [showProfileOptions, setShowProfileOptions] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [matchedUsers, setMatchedUsers] = useState<UserSearchResult[]>([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
@@ -71,6 +72,7 @@ export default function Chat() {
         const items = records.map((conversation) => ({
           id: conversation.id,
           peerId: otherUserId(conversation, currentProfile.id),
+          username: conversation.peer_username,
         }));
         setProfile(currentProfile);
         setConversations(items);
@@ -152,16 +154,17 @@ export default function Chat() {
         item.peerId === message.sender_id,
     );
     if (existingIndex >= 0) {
-      if (conversationsWithIncoming[existingIndex].id === null) {
-        conversationsWithIncoming[existingIndex] = {
-          ...conversationsWithIncoming[existingIndex],
-          id: message.conversation_id,
-        };
-      }
+      const conversation = conversationsWithIncoming[existingIndex];
+      conversationsWithIncoming[existingIndex] = {
+        ...conversation,
+        id: conversation.id ?? message.conversation_id,
+        username: conversation.username ?? message.sender_username ?? undefined,
+      };
     } else {
       conversationsWithIncoming.unshift({
         id: message.conversation_id,
         peerId: message.sender_id,
+        username: message.sender_username ?? undefined,
       });
     }
   }
@@ -174,11 +177,17 @@ export default function Chat() {
       ]
     : [];
   const seenMessageIds = new Set<number>();
-  const activeMessages = combinedMessages.filter((message) => {
-    if (seenMessageIds.has(message.id)) return false;
-    seenMessageIds.add(message.id);
-    return true;
-  });
+  const activeMessages = combinedMessages
+    .filter((message) => {
+      if (seenMessageIds.has(message.id)) return false;
+      seenMessageIds.add(message.id);
+      return true;
+    })
+    .sort((left, right) => {
+      const timeDifference =
+        Date.parse(left.created_at) - Date.parse(right.created_at);
+      return timeDifference || left.id - right.id;
+    });
 
   useEffect(() => {
     feedEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -266,12 +275,20 @@ export default function Chat() {
   }
 
   function signOut() {
+    setShowProfileOptions(false);
     sessionStorage.removeItem("access_token");
     navigate("/login", { replace: true });
   }
 
+  const selectedConversation = selected
+    ? conversationsWithIncoming.find(
+        (conversation) => conversation.peerId === selected.peerId,
+      )
+    : undefined;
   const selectedLabel = selected
-    ? selected.username ?? `User #${selected.peerId}`
+    ? selected.username ??
+      selectedConversation?.username ??
+      `User #${selected.peerId}`
     : "";
   const latestMessage = selected
     ? activeMessages[activeMessages.length - 1]
@@ -290,7 +307,14 @@ export default function Chat() {
         <div className="rail-spacer" />
         <ThemeToggle />
         {profile && (
-          <button className="rail-profile" type="button" onClick={signOut} aria-label={`Sign out ${profile.username}`} title="Sign out">
+          <button
+            className="rail-profile"
+            type="button"
+            onClick={() => setShowProfileOptions(true)}
+            aria-label={`Profile options for ${profile.username}`}
+            aria-haspopup="dialog"
+            title={profile.username}
+          >
             <Avatar label={profile.username} seed={profile.id} />
           </button>
         )}
@@ -468,6 +492,58 @@ export default function Chat() {
               {!userSearch.trim() && (
                 <span className="user-search-message">Type a username to see matching people.</span>
               )}
+            </div>
+          </section>
+        </div>
+      )}
+      {showProfileOptions && profile && (
+        <div
+          className="dialog-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowProfileOptions(false);
+            }
+          }}
+        >
+          <section
+            className="new-chat-dialog profile-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-options-title"
+          >
+            <button
+              className="dialog-close"
+              type="button"
+              onClick={() => setShowProfileOptions(false)}
+              aria-label="Close profile options"
+            >
+              <Icon name="close" />
+            </button>
+            <div className="profile-summary">
+              <Avatar label={profile.username} seed={profile.id} size="large" />
+              <div>
+                <span className="form-kicker">YOUR ACCOUNT</span>
+                <h2 id="profile-options-title">{profile.username}</h2>
+                <p>{profile.email}</p>
+              </div>
+            </div>
+            <div className="profile-actions">
+              <button className="profile-action" type="button" disabled>
+                <span>
+                  <strong>Edit Profile</strong>
+                  <small>Update your account details</small>
+                </span>
+                <span className="profile-coming-soon">Coming soon</span>
+              </button>
+              <button
+                className="profile-action profile-sign-out"
+                type="button"
+                onClick={signOut}
+              >
+                <strong>Sign out</strong>
+                <span aria-hidden="true">→</span>
+              </button>
             </div>
           </section>
         </div>

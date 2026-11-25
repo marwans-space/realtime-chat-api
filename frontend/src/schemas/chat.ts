@@ -11,6 +11,7 @@ export const messageResponseSchema = z.object({
   id: z.number().int(),
   conversation_id: z.number().int(),
   sender_id: z.number().int(),
+  sender_username: z.string().nullable().optional(),
   content: z.string(),
   created_at: z.iso.datetime({ offset: true }),
 });
@@ -20,6 +21,7 @@ export const conversationResponseSchema = z.object({
   id: z.number().int(),
   user1_id: z.number().int(),
   user2_id: z.number().int(),
+  peer_username: z.string().min(1),
   created_at: z.iso.datetime(),
 });
 

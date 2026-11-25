@@ -37,8 +37,11 @@ export default function ConversationList({
   onSelectConversation,
   onRetry,
 }: ConversationListProps) {
+  const query = search.trim().toLowerCase();
   const visibleConversations = conversations.filter((conversation) =>
-    `user ${conversation.peerId}`.includes(search.trim().toLowerCase()),
+    `${conversation.username ?? ""} user ${conversation.peerId}`
+      .toLowerCase()
+      .includes(query),
   );
 
   return (
@@ -72,7 +75,7 @@ export default function ConversationList({
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search conversations"
-          aria-label="Search conversations by user ID"
+          aria-label="Search conversations by username or user ID"
         />
         {search && (
           <button
@@ -135,7 +138,7 @@ export default function ConversationList({
             <strong>{search ? "No matches just yet" : "Your space is all yours"}</strong>
             <p>
               {search
-                ? "Try a different user ID."
+                ? "Try a different username or user ID."
                 : "Start a conversation and bring someone in."}
             </p>
             {!search && (

@@ -30,7 +30,9 @@ async def message(body: MessageModel,current_user: User = Depends(get_current_us
         await session.rollback()
         raise
 
-    message_response = MessageResponse.model_validate(message)
+    message_response = MessageResponse.model_validate(message).model_copy(
+        update={"sender_username": current_user.username}
+    )
     await manager.send_personal_message(
         message=message_response.model_dump(mode="json"),
         user_id=recipient.id,
@@ -42,7 +44,33 @@ async def get_convo(current_user: User = Depends(get_current_user), session: Asy
     query = select(Conversation).where(or_(Conversation.user1_id == current_user.id, Conversation.user2_id == current_user.id)).order_by(Conversation.created_at.desc())
     result = await session.execute(query)
     conversations = result.scalars().all()
-    return conversations
+    if not conversations:
+        return []
+
+    peer_ids = [
+        conversation.user2_id
+        if conversation.user1_id == current_user.id
+        else conversation.user1_id
+        for conversation in conversations
+    ]
+    peer_result = await session.execute(
+        select(User.id, User.username).where(User.id.in_(peer_ids))
+    )
+    peer_usernames = dict(peer_result.all())
+    return [
+        {
+            "id": conversation.id,
+            "user1_id": conversation.user1_id,
+            "user2_id": conversation.user2_id,
+            "peer_username": peer_usernames[
+                conversation.user2_id
+                if conversation.user1_id == current_user.id
+                else conversation.user1_id
+            ],
+            "created_at": conversation.created_at,
+        }
+        for conversation in conversations
+    ]
 
 @router.get("/conversation/{conversation_id}/messages",response_model=list[MessageResponse])
 async def get_messages(conversation_id: int,current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_db)):

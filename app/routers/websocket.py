@@ -36,6 +36,7 @@ async def websocket_endpoint(socket: WebSocket, token: str = Query()):
             raise WebSocketException(
                 code=status.WS_1008_POLICY_VIOLATION, reason="User not found"
             )
+        sender_username = user.username
 
     await manager.connect(user_id, socket)
 
@@ -75,7 +76,9 @@ async def websocket_endpoint(socket: WebSocket, token: str = Query()):
                 except Exception:
                     await session.rollback()
                     raise
-            message_response = MessageResponse.model_validate(message)
+            message_response = MessageResponse.model_validate(message).model_copy(
+                update={"sender_username": sender_username}
+            )
             await manager.send_personal_message(
                 message=message_response.model_dump(mode="json"),
                 user_id=recipient.id,

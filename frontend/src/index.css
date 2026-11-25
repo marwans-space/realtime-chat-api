@@ -1058,6 +1058,93 @@ button:disabled {
   animation: lift-in 180ms ease-out;
 }
 
+.profile-dialog {
+  width: min(100%, 390px);
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 28px;
+}
+
+.profile-dialog .profile-summary h2 {
+  margin: 5px 0 3px;
+  color: var(--text);
+  font-size: 19px;
+  letter-spacing: -0.04em;
+}
+
+.profile-summary p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.profile-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 25px;
+}
+
+.profile-action {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--text);
+  text-align: left;
+}
+
+button.profile-action {
+  cursor: pointer;
+}
+
+.profile-action > span:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-action strong {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.profile-action small {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.profile-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.profile-coming-soon {
+  color: var(--text-muted);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.profile-sign-out {
+  border-color: rgb(193 77 86 / 18%);
+  background: rgb(193 77 86 / 6%);
+  color: #b6444e;
+  cursor: pointer;
+}
+
+.profile-sign-out:hover {
+  background: rgb(193 77 86 / 11%);
+}
+
 .dialog-close {
   position: absolute;
   top: 17px;
